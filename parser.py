@@ -2,6 +2,7 @@ import os
 import re
 import json
 
+
 def remove_file(filename):
     try:
         os.remove(filename)
@@ -9,37 +10,71 @@ def remove_file(filename):
         pass
 
 
-# def getReading(kanji):
-#     if
-#         readings = [strip_tags(i).replace('[sound:', '\t[sound:') for i in open(input_file, encoding="utf8").readlines()]
-#     return
-
 def getChars(i):
     char_delim = '→'
     chars = i[i.index(char_delim) + 1:]
     chars = list(re.sub('[, \n]', '', chars))
     return chars
 
+
 def getRadical(i):
     r = i[0]
     return r
 
+
 def getReading(i):
-    reading = re.search('\((.*?)\)',i).group(1)
+    reading = re.search('\((.*?)\)', i).group(1)
     reading = reading.split(', ')
-    print(reading)
+    # print(reading)
     return reading
+
+def inReading(character, expression, data):
+    for r in data[character]['reading']:
+        if r in expression:
+            print(expression)
+            print(data[character]['raw'])
+            return True
+    return False
+
+
+def injectReadingData(data, cards_file, output):
+    remove_file(output)
+    with open(output, "a") as myfile:
+        n=0
+        for i in open(cards_file, encoding="utf8").readlines():
+            # expression = [splits for splits in i.split("\t") if splits is not ""][5]
+
+            phonetics = []
+            expression = i.split("\t")[0]
+
+            for c in expression:
+                if c in data:
+                    if inReading(c, expression,data):
+                        if data[c]['raw'] not in phonetics:
+                            phonetics.append(data[c]['raw'])
+            if phonetics:
+                n = n+ 1
+
+            row = i.split("\t")
+            row[28] = '<br>'.join(phonetics)
+            myfile.write('\t'.join(row))
+            # print(expression)
+        print(n)
+
 
 def main():
     input_file = 'yomi.txt'
-    full_data = 'core.txt'
-    output = 'output/1.csv'
-    remove_file(output)
+    cards_file = 'core.txt'
+    json_output = 'data.json'
+    cards_output = 'test.txt'
+    data = getReadingData(input_file)
+    injectReadingData(data, cards_file, cards_output)
+    # dumper(data, json_output)
+
+
+def getReadingData(input_file):
     data = {}
-    i = open(input_file, 'r')
     for i in open(input_file, encoding="utf8").readlines():
-        # chars = chars.split(',')
-        # chars = chars.split(',')
         chars = getChars(i)
         radical = getRadical(i)
         reading = getReading(i)
@@ -49,23 +84,14 @@ def main():
             data[c]['radical'] = radical
             data[c]['reading'] = reading
             data[c]['relative'] = chars
-        # data['chars'] =
+    return data
 
+
+def dumper(data, output):
     # print(data)
-
-
-    with open('data.json', 'w') as outfile:
+    remove_file(output)
+    with open(output, 'w') as outfile:
         json.dump(data, outfile, ensure_ascii=False)
-
-
-        # clean_i = strip_tags(li)
-
-        # o = open(output, 'a+', encoding="utf8")
-        # for item in list_i:
-        #     o.write("%s\n" % item)
-        # # o.write(li.encode('utf8'))
-        # o.close()
-        #
 
 
 if __name__ == '__main__':

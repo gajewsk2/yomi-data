@@ -54,7 +54,13 @@ def injectReadingData(data, cards_file, output):
                 if c in data:
                     if inReading(idx, c, expression,data):
                         if data[c]['raw'] not in phonetics:
-                            phonetics.append(data[c]['raw'])
+                            raw = data[c]['raw']
+                            delim_index = raw.index('→')
+                            chars = (raw)[delim_index:]
+                            highlight_index = (chars).index(c)
+                            total_index = delim_index + highlight_index
+                            highlighted = raw[:total_index]+'<b>'+ c +'</b>'+raw[total_index+1:]
+                            phonetics.append(highlighted)
             if phonetics:
                 n = n+ 1
 

@@ -28,18 +28,21 @@ def getReading(i):
     # print(reading)
     return reading
 
-def inReading(character, expression, data):
+def inReading(idx, character, expression, data):
+    # print(expression[idx:])
+    expression = expression[idx:]
+    expression = expression[:expression.index(']')]
     for r in data[character]['reading']:
         if r in expression:
-            print(expression)
-            print(data[character]['raw'])
+            # print(expression)
+            # print(data[character]['raw'])
             return True
     return False
 
 
 def injectReadingData(data, cards_file, output):
     remove_file(output)
-    with open(output, "a") as myfile:
+    with open(output, "a", encoding="utf8") as myfile:
         n=0
         for i in open(cards_file, encoding="utf8").readlines():
             # expression = [splits for splits in i.split("\t") if splits is not ""][5]
@@ -47,9 +50,9 @@ def injectReadingData(data, cards_file, output):
             phonetics = []
             expression = i.split("\t")[0]
 
-            for c in expression:
+            for idx, c in enumerate(expression):
                 if c in data:
-                    if inReading(c, expression,data):
+                    if inReading(idx, c, expression,data):
                         if data[c]['raw'] not in phonetics:
                             phonetics.append(data[c]['raw'])
             if phonetics:
@@ -58,6 +61,7 @@ def injectReadingData(data, cards_file, output):
             row = i.split("\t")
             row[28] = '<br>'.join(phonetics)
             myfile.write('\t'.join(row))
+            # print('\t'.join(row))
             # print(expression)
         print(n)
 
